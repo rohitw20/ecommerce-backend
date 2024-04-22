@@ -110,15 +110,22 @@ const getAllProducts = async (reqQuery) => {
       pageSize,
     } = reqQuery;
 
+    minPrice = parseInt(minPrice);
+    maxPrice = parseInt(maxPrice);
+    minDiscount = parseInt(minDiscount);
+    pageNumber = parseInt(pageNumber);
+    pageSize = parseInt(pageSize);
     pageSize = pageSize || 10;
+
     let query = Product.find().populate("category");
 
     if (category) {
       const existCategory = await Category.findOne({ name: category });
+
       if (existCategory) {
         query = query.where("category").equals(existCategory._id);
       } else {
-        return { contente: [], currentPage: 1, totalPages: 0 };
+        return { content: [], currentPage: 1, totalPages: 0 };
       }
     }
 
@@ -135,20 +142,18 @@ const getAllProducts = async (reqQuery) => {
 
     if (sizes) {
       const sizesSet = new Set(sizes);
-      query = (await query.where("sizes.name")).includes([...sizesSet]);
+      query = query.where("sizes.name").in([...sizesSet]);
     }
 
-    if (minPrice && maxPrice) {
-      query = (await query.where("discountePrice").gte(minPrice)).filter(
-        maxPrice
-      );
+    if (minPrice && maxPrice && minPrice != 0 && maxPrice != 0) {
+      query = query.where("discountedPrice").gte(minPrice).lte(maxPrice);
     }
 
     if (minDiscount) {
       query = query.where("discountPresent").gt(minDiscount);
     }
 
-    if (stock) {
+    if (stock && stock !== "null") {
       if (stock === "in_stock") {
         query = query.where("quantity").gt(0);
       } else if (stock === "out_of_stock") {
@@ -163,11 +168,14 @@ const getAllProducts = async (reqQuery) => {
 
     const totalProducts = await Product.countDocuments(query);
 
-    const skip = (pageNumber - 1) * pageSize;
+    const skip =
+      (pageNumber - 1) * pageSize < 0 ? 1 : (pageNumber - 1) * pageSize;
+
     query = query.skip(skip).limit(pageSize);
 
     const products = await query.exec();
     const totalPages = Math.ceil(totalProducts / pageSize);
+
     return { content: products, currentPage: pageNumber, totalPages };
   } catch (error) {
     throw new Error(error.message);
