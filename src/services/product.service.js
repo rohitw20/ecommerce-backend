@@ -37,6 +37,7 @@ const createProduct = async (reqData) => {
       secondLevel = new Category({
         name: reqData.secondLevelCategory,
         level: 2,
+        parentCategory: topLevel._id,
       });
 
       await secondLevel.save();
@@ -50,6 +51,7 @@ const createProduct = async (reqData) => {
     if (!thirdLevel) {
       thirdLevel = new Category({
         name: reqData.thirdLevelCategory,
+        parentCategory: topLevel._id,
         level: 3,
       });
 
