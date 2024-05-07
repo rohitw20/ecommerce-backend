@@ -11,6 +11,7 @@ const orderRouters = require("./routes/order.route");
 const adminOrderRouters = require("./routes/adminOrder.route");
 const reviewRouters = require("./routes/review.route");
 const ratingRouters = require("./routes/rating.route");
+const paymentRouters = require("./routes/payment.route");
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use("/api/orders", orderRouters);
 app.use("/api/admin/orders", adminOrderRouters);
 app.use("/api/reviews", reviewRouters);
 app.use("/api/ratings", ratingRouters);
+app.use("/api/payments", paymentRouters);
 
 app.get("/", (req, res) => {
   return res.json({ message: "Server is running!" });
